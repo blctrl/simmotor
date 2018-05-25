@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN'
+     'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
+
+<html>
+<head>
+<title>links</title>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<link rel='stylesheet' href='style.css' type='text/css'>
+</head>
+<body>
+
+
+
+
+<div class="pod">
+
+<h1 id="Extensible-Links">Extensible Links</h1>
+
+<p>The extensible link mechanism allows new kinds of record links to be created, using JSON for the link address syntax. The IOC continues to support the older link types that do not use JSON to specify their link addresses.</p>
+
+<p>The following additional link types are available in this release:</p>
+
+<ul>
+
+<li><p><a href="#Constant-Link-const">Constant</a></p>
+
+</li>
+<li><p><a href="#Calculation-Link-calc">Calc</a></p>
+
+</li>
+</ul>
+
+<h2 id="Using-JSON-Links">Using JSON Links</h2>
+
+<p>When setting a record link field to a JSON link address, the link specification must appear inside a pair of braces <code> {} </code> expressed as a JSON (<a href="http://www.json.org/">JavaScript Object Notation</a>) object, which allows link parameters to be defined as needed by the particular link type. When link fields are set from an IOC database file at initialization time, the field definitions may take advantage of a &quot;relaxed JSON&quot; syntax that reduces the number of double-quote characters required and maintains backwards compatibility with the older database file syntax.</p>
+
+<h2 id="Link-Type-Reference">Link Type Reference</h2>
+
+<h3 id="Constant-Link-const">Constant Link <code>&quot;const&quot;</code></h3>
+
+<p>Constant links provide one or more values at link initalization time, but do not return any data when their <code>getValue()</code> routine is called. Most record types support the use of constant links by calling <code>recGblInitConstantLink()</code> at record initialization, which results in the constant value being loaded into the target field at that time.</p>
+
+<p>Note that for most record types (the <code>printf</code> and <code>calcout</code> records are the main exceptions) it is pointless to set an input link to a constant link at runtime since the link initialization that loads the field value usually only happens when a record is initialized. A constant link that is embedded inside another input link type such as a calculation link should be OK though since the link initialization will take place when the record&#39;s field gets set.</p>
+
+<h4 id="Parameters">Parameters</h4>
+
+<p>A const link takes a parameter which may be an integer, double or string, or an array of those types. If an array contains both integers and double values the integers will be promoted to doubles. Mixing strings and numbers in an array results in an error.</p>
+
+<h4 id="Examples">Examples</h4>
+
+<pre><code> {const: 3.14159265358979}
+ {const: &quot;Pi&quot;}
+ {const: [1, 2.718281828459, 3.14159265358979]}
+ {const: [&quot;One&quot;, &quot;e&quot;, &quot;Pi&quot;]}</code></pre>
+
+<p>The JSON syntax does not support Infinity or NaN values when parsing numbers, but (for scalars) it is possible to provide these in a string which will be converted to the desired double value at initialization, for example:</p>
+
+<pre><code> field(INP, {const:&quot;Inf&quot;})</code></pre>
+
+<h3 id="Calculation-Link-calc">Calculation Link <code>&quot;calc&quot;</code></h3>
+
+<p>Calculation links can perform simple mathematical expressions on scalar (double-precision floating-point) values obtained from other link types and return a single double-precision floating-point result. The expressions are evaluated by the EPICS Calc engine, and up to 12 inputs can be provided.</p>
+
+<h4 id="Parameters1">Parameters</h4>
+
+<p>The link address is a JSON map with the following keys:</p>
+
+<dl>
+
+<dt>expr</dt>
+<dd>
+
+<p>The primary expression to be evaluated, given as a string.</p>
+
+</dd>
+<dt>major</dt>
+<dd>
+
+<p>An optional expression that returns non-zero to raise a major alarm.</p>
+
+</dd>
+<dt>minor</dt>
+<dd>
+
+<p>An optional expression that returns non-zero to raise a minor alarm.</p>
+
+</dd>
+<dt>args</dt>
+<dd>
+
+<p>A JSON list of up to 12 input arguments for the expression, which are assigned to the inputs <code>A</code>, <code>B</code>, <code>C</code>, ... <code>L</code>. Each input argument may be either a numeric literal or an embedded JSON link inside <code>{}</code> braces. The same input values are provided to the two alarm expressions as to the primary expression.</p>
+
+</dd>
+<dt>units</dt>
+<dd>
+
+<p>An optional string specifying the engineering units for the result of the expression. Equivalent to the <code>EGU</code> field of a record.</p>
+
+</dd>
+<dt>prec</dt>
+<dd>
+
+<p>An optional integer specifying the numeric precision with which the calculation result should be displayed. Equivalent to the <code>PREC</code> field of a record.</p>
+
+</dd>
+</dl>
+
+<h4 id="Example">Example</h4>
+
+<pre><code> {calc: {expr:&quot;A*B&quot;, args:[{db:&quot;record.VAL&quot;}, 1.5], prec:3}}</code></pre>
+
+
+
+</div>
+
+</body>
+</html>
+
